@@ -1,0 +1,55 @@
+---
+# tasks file for get_file_from_ass
+#  - name: test - get hostname
+#    command:
+#      cmd: hostname
+#    register: result
+#    delegate_to: "{{ast_hostname }}"
+
+#  - name: test - display hostname
+#    debug:
+#      msg: "{{ result.stdout }}"
+
+  - name: display debug msg
+    debug:
+      msg: "this is debug message"
+
+  - name: get from as-s to as-t << as-s-(ftp)-acs-(ftp)-as-t >>
+    telnet:
+      host: 20.0.1.70
+      user: root
+      password: ichikawa
+      login_prompt: "ip-20-0-1-70 login: "
+      prompts:
+        - "[>#]"
+      command:
+        - hostname
+        - echo "this is echo message"
+        - cd /var/www/ftp/
+        - echo "" > get_file_ansi.sh
+        - echo "ftp -n <<END" >> get_file_ansi.sh
+        - echo "open 20.0.2.225 2121" >> get_file_ansi.sh
+        - echo "user ftpuser@20.0.3.109 ichikawa" >> get_file_ansi.sh
+        - echo "cd /var/www/ftp/"     >> get_file_ansi.sh
+        - echo "binary"               >> get_file_ansi.sh
+        - echo "prompt"               >> get_file_ansi.sh
+        - echo "get test_1226"        >> get_file_ansi.sh
+        - echo "END"                  >> get_file_ansi.sh
+        - bash get_file_ansi.sh
+    register: result
+
+  - name: get from as-s to as-t << as-s-(ftp)-as-t >>
+    debug:
+      msg: "insert task for direct connect here"
+
+  - name: display result
+    debug:
+      msg: "{{ result.output }}"
+
+  - name: get from ast to target << ast-(ftp)-target >>
+    get_url:
+      url: ftp://ftpuser:ichikawa@20.0.1.70/test_1226
+      dest: /tmp
+    ignore_errors: true
+
+
