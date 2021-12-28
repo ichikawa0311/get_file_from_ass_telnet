@@ -1,4 +1,19 @@
 ---
 # defaults file for get_file_from_ass
 ast_hostname: ""
+ast_telnet_user: ""
+ast_telnet_pass: ""
+ast_ftp_user: ""
+ast_ftp_pass: ""
+ast_ftp_dir: ""
 
+acs_hostname: ""
+acs_port: ""
+acs_ftp_user: ""
+acs_ftp_pass: ""
+
+ass_hostname: ""
+ass_ftp_user: ""
+ass_ftp_pass: ""
+
+filename: ""
