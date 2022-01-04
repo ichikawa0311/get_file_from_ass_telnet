@@ -1,22 +1,31 @@
 ---
 # tasks file for get_file_from_ass
-#  - name: test - get hostname
-#    command:
-#      cmd: hostname
-#    register: result
-#    delegate_to: "{{ast_hostname }}"
-
-#  - name: test - display hostname
-#    debug:
-#      msg: "{{ result.stdout }}"
 
   - name: display debug msg
     debug:
       msg: "this is debug message"
 
-  - name: get from as-s to as-t << as-s-(ftp)-acs-(ftp)-as-t >>
+  - name: make ftp command file (put from target to as-t)
+    template:
+      src: ftp_target2ast.j2
+      dest: /tmp/ftp_target2ast.txt
+      mode: 0644
+
+  - name: make ftp command file (get from as-s to as-t)
+    template: 
+      src: ftp_ast2ass.j2
+      dest: /tmp/ftp_ast2ass.txt
+      mode: 0644
+
+  # commandモジュールだとなぜか失敗する.
+  - name: ftp put from target to as-t
+    shell: 
+      cmd: "ftp -n < ftp_target2ast.txt"
+      chdir: /tmp/
+
+  - name: get from as-s to as-t << as-s -(ftp)- acs -(ftp)- as-t >>
     telnet:
-      host: "{{ ast_hostname }}" #20.0.1.70
+      host: "{{ ast_hostname }}"
       user: "{{ ast_telnet_user }}"
       password: "{{ ast_telnet_pass }}"
       login_prompt: "ip-20-0-1-70 login: "
@@ -26,26 +35,41 @@
         - hostname
         - echo "this is echo message"
         - cd /var/www/ftp/
-        - echo ""                        >  get_file_ansi.sh
-        - echo "ftp -n <<END"            >> get_file_ansi.sh
-        - echo "open {{ acs_hostname }} {{ acs_port }}" >> get_file_ansi.sh
-        - echo "user {{ass_ftp_user}}@{{ ass_hostname }} {{ ass_ftp_pass }}" >> get_file_ansi.sh
-        - echo "cd {{ ast_ftp_dir }}"     >> get_file_ansi.sh
-        - echo "binary"                   >> get_file_ansi.sh
-        - echo "prompt"                   >> get_file_ansi.sh
-        - echo "get {{ filename }}"       >> get_file_ansi.sh
-        - echo "END"                      >> get_file_ansi.sh
-        - bash get_file_ansi.sh
-        - cat get_file_ansi.sh
+        - ftp -n < ftp_ast2ass.txt
     register: result
+
+#  - name: get from as-s to as-t << as-s-(ftp)-acs-(ftp)-as-t >>
+#    telnet:
+#      host: "{{ ast_hostname }}" #20.0.1.70
+#      user: "{{ ast_telnet_user }}"
+#      password: "{{ ast_telnet_pass }}"
+#      login_prompt: "ip-20-0-1-70 login: "
+#      prompts:
+#        - "[>#]"
+#      command:
+#        - hostname
+#        - echo "this is echo message"
+#        - cd /var/www/ftp/
+#        - echo ""                        >  get_file_ansi.sh
+#        - echo "ftp -n <<END"            >> get_file_ansi.sh
+#        - echo "open {{ acs_hostname }} {{ acs_port }}" >> get_file_ansi.sh
+#        - echo "user {{ass_ftp_user}}@{{ ass_hostname }} {{ ass_ftp_pass }}" >> get_file_ansi.sh
+#        - echo "cd {{ ast_ftp_dir }}"     >> get_file_ansi.sh
+#        - echo "binary"                   >> get_file_ansi.sh
+#        - echo "prompt"                   >> get_file_ansi.sh
+#        - echo "get {{ filename }}"       >> get_file_ansi.sh
+#        - echo "END"                      >> get_file_ansi.sh
+#        - bash get_file_ansi.sh
+#        - cat get_file_ansi.sh
+#    register: result
 
   - name: get from as-s to as-t << as-s-(ftp)-as-t >>
     debug:
       msg: "insert task for direct connect here"
 
-  - name: display result
-    debug:
-      msg: "{{ result.output }}"
+#  - name: display result
+#    debug:
+#      msg: "{{ result.output }}"
 
   - name: get from ast to target << ast-(ftp)-target >>
     get_url:
